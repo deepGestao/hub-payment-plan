@@ -1,6 +1,7 @@
 import uuid4 from 'uuid4';
 import { parseRequest } from './parseRequest/parseRequest';
 import { sendDynamoDbRequest } from './sendDynamoDbRequest/sendDynamoDbRequest';
+import { requestGateway } from './requestGateway/requestGateway';
 
 const handler = async (event, context) => {
   console.log(event, context);
@@ -9,10 +10,11 @@ const handler = async (event, context) => {
     const validate = parseRequest(content);
     if (validate) {
       const token = uuid4();
-      await sendDynamoDbRequest(content, token);
+      const result = await requestGateway(content);
+      await sendDynamoDbRequest(content, token, result);
       return {
         statusCode: 200,
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, url: result.url }),
       };
     }
     return {
